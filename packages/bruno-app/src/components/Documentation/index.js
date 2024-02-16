@@ -2,7 +2,7 @@ import 'github-markdown-css/github-markdown.css';
 import get from 'lodash/get';
 import { updateRequestDocs } from 'providers/ReduxStore/slices/collections';
 import { useTheme } from 'providers/Theme';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { saveRequest } from 'providers/ReduxStore/slices/collections/actions';
 import Markdown from 'components/MarkDown';
@@ -13,8 +13,20 @@ const Documentation = ({ item, collection }) => {
   const dispatch = useDispatch();
   const { storedTheme } = useTheme();
   const [isEditing, setIsEditing] = useState(false);
-  const docs = item.draft ? get(item, 'draft.request.docs') : get(item, 'request.docs');
+  const [docs, setDocs] = useState(item.draft ? get(item, 'draft.request.docs') : get(item, 'request.docs'));
   const preferences = useSelector((state) => state.app.preferences);
+
+  useEffect(() => {
+    const body =
+      item?.request?.body?.json?.toString().replaceAll(',', ',\n ').replaceAll('{', '{\n').replaceAll('}', '\n}') || '';
+
+    const docs = `**URL :** ${item.request.url}\n
+    Method : ${item.request.method}\n**Body :**\n
+    ${body}\n`;
+
+    console.log('item', item);
+    setDocs(docs);
+  }, [item.response]);
 
   const toggleViewMode = () => {
     setIsEditing((prev) => !prev);
