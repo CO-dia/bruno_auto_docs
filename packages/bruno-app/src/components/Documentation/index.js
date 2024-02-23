@@ -17,16 +17,24 @@ const Documentation = ({ item, collection }) => {
   const preferences = useSelector((state) => state.app.preferences);
 
   useEffect(() => {
-    const body =
-      item?.request?.body?.json?.toString().replaceAll(',', ',\n ').replaceAll('{', '{\n').replaceAll('}', '\n}') || '';
+    autoGenerate();
+    onEdit(docs);
+  }, [docs]);
 
-    const docs = `**URL :** ${item.request.url}\n
-    Method : ${item.request.method}\n**Body :**\n
-    ${body}\n`;
+  const autoGenerate = () => {
+    const body = item?.request?.body?.json?.toString().replaceAll(/,/g, ',\n').replaceAll(/{/g, '{\n');
 
-    console.log('item', item);
+    const docs = `**URL :**\n
+    ${item.request.url}
+    \n**Method :**\n
+    ${item.request.method}
+    \n${item.request.headers.length !== 0 ? '**Headers :**' : ''}
+    \n\t${item.request.headers.map((header) => `${header.name} : ${header.value}`).join('\n\t')}
+    \n${item.request.body.json ? '**Body :**' : ''}
+    \n${body}\n**Responses** : \n`;
+
     setDocs(docs);
-  }, [item.response]);
+  };
 
   const toggleViewMode = () => {
     setIsEditing((prev) => !prev);
@@ -50,8 +58,14 @@ const Documentation = ({ item, collection }) => {
 
   return (
     <StyledWrapper className="mt-1 h-full w-full relative">
-      <div className="editing-mode mb-2" role="tab" onClick={toggleViewMode}>
-        {isEditing ? 'Preview' : 'Edit'}
+      <div className="flex mb-2">
+        <div className="editing-mode" role="tab" onClick={toggleViewMode}>
+          {isEditing ? 'Preview' : 'Edit'}
+        </div>
+
+        <div className="editing-mode ml-5" role="tab" onClick={autoGenerate}>
+          Auto-Generate
+        </div>
       </div>
 
       {isEditing ? (
