@@ -39,20 +39,20 @@ const Documentation = ({ item, collection }) => {
     \n\t${item.request.headers.map((header) => `${header.name} : ${header.value}`).join('\n\t')}
     \n${item.request.body.json ? '**Body :**' : ''}
     \n${body}\n`;
-
+    console.log(item.response);
     setDocs(docs);
   };
 
   const addResponse = () => {
-    const response = JSON.stringify(item?.response?.data?.data || '', null, 2);
+    const response = JSON.stringify(item?.response?.data || '', null, 2);
 
     const formattedResponse = response
       .split('\n')
       .map((line) => `\t${line}`)
       .join('\n');
 
-    setDocs(`${docs}\n\n${item.response.data.data ? '**Response :** ' + item.response.status : ''}\n
-        \n${item.response.data.data ? formattedResponse : ''}`);
+    setDocs(`${docs}\n\n${item.response.data ? '**Response :** ' + item.response.status : ''}\n
+        \n${item.response.data ? formattedResponse : ''}`);
   };
 
   const toggleViewMode = () => {
@@ -86,7 +86,7 @@ const Documentation = ({ item, collection }) => {
           Auto-Generate
         </div>
 
-        {item?.response?.data?.data && (
+        {item?.response?.data && (
           <div className="editing-mode ml-5" role="tab" onClick={addResponse}>
             Add Response
           </div>
