@@ -17,12 +17,19 @@ const Documentation = ({ item, collection }) => {
   const preferences = useSelector((state) => state.app.preferences);
 
   useEffect(() => {
-    autoGenerate();
     onEdit(docs);
   }, [docs]);
 
   const autoGenerate = () => {
-    const body = item?.request?.body?.json?.toString().replaceAll(/,/g, ',\n').replaceAll(/{/g, '{\n');
+    const body =
+      item?.request?.body?.json
+        ?.toString()
+        .replaceAll(/,/g, ',\n')
+        .replaceAll(/{/g, '\t{\n')
+        .replaceAll(/}/g, '\t  }')
+        .replaceAll(/\n\n/g, '\n\n\t')
+        .replaceAll(/\s*:\s*{/g, ': {')
+        .replaceAll(/\t  }$/g, '\n\t}') || '';
 
     const docs = `**URL :**\n
     ${item.request.url}
@@ -31,9 +38,21 @@ const Documentation = ({ item, collection }) => {
     \n${item.request.headers.length !== 0 ? '**Headers :**' : ''}
     \n\t${item.request.headers.map((header) => `${header.name} : ${header.value}`).join('\n\t')}
     \n${item.request.body.json ? '**Body :**' : ''}
-    \n${body}\n**Responses** : \n`;
+    \n${body}\n`;
 
     setDocs(docs);
+  };
+
+  const addResponse = () => {
+    const response = JSON.stringify(item?.response?.data?.data || '', null, 2);
+
+    const formattedResponse = response
+      .split('\n')
+      .map((line) => `\t${line}`)
+      .join('\n');
+
+    setDocs(`${docs}\n\n${item.response.data.data ? '**Response :** ' + item.response.status : ''}\n
+        \n${item.response.data.data ? formattedResponse : ''}`);
   };
 
   const toggleViewMode = () => {
@@ -66,6 +85,12 @@ const Documentation = ({ item, collection }) => {
         <div className="editing-mode ml-5" role="tab" onClick={autoGenerate}>
           Auto-Generate
         </div>
+
+        {item?.response?.data?.data && (
+          <div className="editing-mode ml-5" role="tab" onClick={addResponse}>
+            Add Response
+          </div>
+        )}
       </div>
 
       {isEditing ? (
